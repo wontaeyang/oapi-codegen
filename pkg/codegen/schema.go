@@ -57,11 +57,12 @@ func (s Schema) GetAdditionalTypeDefs() []TypeDefinition {
 }
 
 type Property struct {
-	Description   string
-	JsonFieldName string
-	Schema        Schema
-	Required      bool
-	Nullable      bool
+	Description    string
+	JsonFieldName  string
+	Schema         Schema
+	Required       bool
+	Nullable       bool
+	ValidationTags string
 }
 
 func (p Property) GoFieldName() string {
@@ -212,11 +213,12 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 					description = p.Value.Description
 				}
 				prop := Property{
-					JsonFieldName: pName,
-					Schema:        pSchema,
-					Required:      required,
-					Description:   description,
-					Nullable:      p.Value.Nullable,
+					JsonFieldName:  pName,
+					Schema:         pSchema,
+					Required:       required,
+					Description:    description,
+					Nullable:       p.Value.Nullable,
+					ValidationTags: validationTags(p.Value, required),
 				}
 				outSchema.Properties = append(outSchema.Properties, prop)
 			}
@@ -344,10 +346,18 @@ func GenFieldsFromProperties(props []Property) []string {
 		}
 		field += fmt.Sprintf("    %s %s", p.GoFieldName(), p.GoTypeDef())
 		if p.Required || p.Nullable {
-			field += fmt.Sprintf(" `json:\"%s\"`", p.JsonFieldName)
+			field += fmt.Sprintf(" `json:\"%s\"", p.JsonFieldName)
 		} else {
-			field += fmt.Sprintf(" `json:\"%s,omitempty\"`", p.JsonFieldName)
+			field += fmt.Sprintf(" `json:\"%s,omitempty\"", p.JsonFieldName)
 		}
+
+		// Add validation tag or close the field
+		if len(p.ValidationTags) > 0 {
+			field += fmt.Sprintf(" validate:\"%s\"`", p.ValidationTags)
+		} else {
+			field += "`"
+		}
+
 		fields = append(fields, field)
 	}
 	return fields
