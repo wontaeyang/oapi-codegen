@@ -17,8 +17,14 @@ func validationTags(s *openapi3.Schema, req bool) string {
 
 	var values []string
 
+	// Boolean values should not be required as default value is false
+	// It will trigger error on false values.
 	if s.Type != "boolean" && req {
+		// value is required
 		values = append(values, "required")
+	} else {
+		// value is optional
+		values = append(values, "omitempty")
 	}
 
 	addMin := func(min float64) {
@@ -115,6 +121,11 @@ func validationTags(s *openapi3.Schema, req bool) string {
 
 	if s.MaxProps != nil {
 		// todo
+	}
+
+	// prevent single omitempty validation
+	if len(values) == 1 && values[0] == "omitempty" {
+		values = []string{}
 	}
 
 	return strings.Join(values, ",")
