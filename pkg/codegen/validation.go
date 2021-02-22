@@ -17,7 +17,7 @@ func validationTags(s *openapi3.Schema, req bool) string {
 
 	var values []string
 
-	if req {
+	if s.Type != "boolean" && req {
 		values = append(values, "required")
 	}
 
