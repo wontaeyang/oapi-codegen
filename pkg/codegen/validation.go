@@ -17,13 +17,16 @@ func validationTags(s *openapi3.Schema, req bool) string {
 
 	var values []string
 
-	// Boolean values should not be required as default value is false
-	// It will trigger error on false values.
-	if s.Type != "boolean" && req {
-		// value is required
-		values = append(values, "required")
+	// bool value of false should not be required
+	// integer with min 0 should not be required
+	skipRequired := s.Type == "boolean" ||
+		(s.Type == "integer" && s.Min != nil && *s.Min == 0)
+
+	if req {
+		if !skipRequired {
+			values = append(values, "required")
+		}
 	} else {
-		// value is optional
 		values = append(values, "omitempty")
 	}
 
