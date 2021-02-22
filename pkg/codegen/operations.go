@@ -592,10 +592,11 @@ func GenerateParamsTypes(op OperationDefinition) []TypeDefinition {
 			})
 		}
 		prop := Property{
-			Description:   param.Spec.Description,
-			JsonFieldName: param.ParamName,
-			Required:      param.Required,
-			Schema:        pSchema,
+			Description:    param.Spec.Description,
+			JsonFieldName:  param.ParamName,
+			Required:       param.Required,
+			Schema:         pSchema,
+			ValidationTags: validationTags(param.Spec.Schema.Value, param.Required),
 		}
 		s.Properties = append(s.Properties, prop)
 	}
