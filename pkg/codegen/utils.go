@@ -98,6 +98,35 @@ func SortedSchemaKeys(dict map[string]*openapi3.SchemaRef) []string {
 	return keys
 }
 
+// This function returns the keys of the given SchemaRef dictionary in sorted
+// by required order first and alphabetical order after, since Golang scrambles dictionary keys
+func SortedSchemaKeysWithRequired(dict map[string]*openapi3.SchemaRef, req []string) []string {
+	// if all required, just return required keys
+	lenDelta := len(dict) - len(req)
+	if lenDelta == 0 {
+		return req
+	}
+
+	// make a map of req keys for diffing
+	reqMap := map[string]int{}
+	for i := 0; i < len(req); i++ {
+		reqMap[req[i]] = 1
+	}
+
+	// filter out optional keys and sort them
+	optKeys := make([]string, lenDelta)
+	i := 0
+	for key := range dict {
+		if _, ok := reqMap[key]; !ok {
+			optKeys[i] = key
+			i++
+		}
+	}
+	sort.Strings(optKeys)
+
+	return append(req, optKeys...)
+}
+
 // This function is the same as above, except it sorts the keys for a Paths
 // dictionary.
 func SortedPathsKeys(dict openapi3.Paths) []string {
