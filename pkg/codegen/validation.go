@@ -11,10 +11,6 @@ import (
 // adds validation tags
 // https://github.com/go-playground/validator
 func validationTags(s *openapi3.Schema, req bool) string {
-	if s.Type == "array" {
-		s = s.Items.Value
-	}
-
 	var values []string
 
 	// bool value of false should not be required
@@ -82,6 +78,25 @@ func validationTags(s *openapi3.Schema, req bool) string {
 		// todo: generate custom validation function MultipleOf
 	}
 
+	if s.MinProps > 0 {
+		// todo
+	}
+
+	if s.MaxProps != nil {
+		// todo
+	}
+
+	if s.UniqueItems {
+		values = append(values, "unique")
+	}
+
+	// For array types, validate the sub-type
+	var diveArray bool
+	if s.Type == "array" {
+		diveArray = true
+		s = s.Items.Value
+	}
+
 	if s.Format != "" {
 		switch s.Format {
 		case "int32":
@@ -94,6 +109,10 @@ func validationTags(s *openapi3.Schema, req bool) string {
 		case "date-time":
 		case "password":
 		default:
+			if diveArray {
+				// validate each item of the array
+				values = append(values, "dive")
+			}
 			values = append(values, s.Format)
 		}
 	}
@@ -112,18 +131,6 @@ func validationTags(s *openapi3.Schema, req bool) string {
 			items = append(items, typed)
 		}
 		values = append(values, "oneof="+strings.Join(items, " "))
-	}
-
-	if s.UniqueItems {
-		values = append(values, "unique")
-	}
-
-	if s.MinProps > 0 {
-		// todo
-	}
-
-	if s.MaxProps != nil {
-		// todo
 	}
 
 	// prevent single omitempty validation
