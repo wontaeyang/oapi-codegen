@@ -57,7 +57,7 @@ func LowercaseFirstCharacter(str string) string {
 // would be converted to WordWordWordWordWordWordWordWordWordWordWordWordWord
 func ToCamelCase(str string) string {
 	separators := "-#@!$&=.+:;_~ (){}[]"
-	acronyms := []string{"API", "ID"}
+	acronyms := []string{"API", "ID", "IDs"}
 	s := strings.Trim(str, " ")
 
 	n := ""
@@ -105,7 +105,7 @@ func ToCamelCase(str string) string {
 
 func contains(slice []string, val string) (string, bool) {
 	for i := 0; i < len(slice); i++ {
-		if slice[i] == strings.ToUpper(val) {
+		if strings.ToLower(slice[i]) == strings.ToLower(val) {
 			return slice[i], true
 		}
 	}
