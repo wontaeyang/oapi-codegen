@@ -57,23 +57,41 @@ func LowercaseFirstCharacter(str string) string {
 // would be converted to WordWordWordWordWordWordWordWordWordWordWordWordWord
 func ToCamelCase(str string) string {
 	separators := "-#@!$&=.+:;_~ (){}[]"
+	acronyms := []string{"API", "ID"}
 	s := strings.Trim(str, " ")
 
 	n := ""
+	segment := ""
 	capNext := true
-	for _, v := range s {
+	for i := 0; i < len(s); i++ {
+		v := rune(s[i])
 		if unicode.IsUpper(v) {
 			n += string(v)
+			segment = string(v)
 		}
+
 		if unicode.IsDigit(v) {
 			n += string(v)
+			segment = ""
 		}
-		if unicode.IsLower(v) {
-			if capNext {
-				n += strings.ToUpper(string(v))
-			} else {
-				n += string(v)
+
+		if unicode.IsLower(v) && !capNext {
+			n += string(v)
+			segment += string(v)
+		}
+
+		// check if current segment is one of acronyms
+		if acronym, ok := contains(acronyms, segment); ok {
+			if capNext || i == len(s)-1 {
+				n = n[:len(n)-len(acronym)]
+				n += acronym
 			}
+		}
+
+		// if capnext, segment is at the biginning
+		if unicode.IsLower(v) && capNext {
+			n += strings.ToUpper(string(v))
+			segment = strings.ToUpper(string(v))
 		}
 
 		if strings.ContainsRune(separators, v) {
@@ -83,6 +101,15 @@ func ToCamelCase(str string) string {
 		}
 	}
 	return n
+}
+
+func contains(slice []string, val string) (string, bool) {
+	for i := 0; i < len(slice); i++ {
+		if slice[i] == strings.ToUpper(val) {
+			return slice[i], true
+		}
+	}
+	return "", false
 }
 
 // This function returns the keys of the given SchemaRef dictionary in sorted
